@@ -330,3 +330,65 @@ func TestDepositTxV2Signing(t *testing.T) {
 	}()
 	signer.Hash(tx)
 }
+
+func TestDepositTxV2WithNonceHash(t *testing.T) {
+	addr := common.HexToAddress("0x1234567890123456789012345678901234567890")
+	
+	// Create a transaction with nonce wrapper
+	inner := &depositTxV2WithNonce{
+		DepositTxV2: DepositTxV2{DepositTx{
+			SourceHash:          common.HexToHash("0xdeadbeef"),
+			From:                addr,
+			To:                  &addr,
+			Mint:                big.NewInt(1000),
+			Value:               big.NewInt(2000),
+			Gas:                 50000,
+			IsSystemTransaction: true,
+			Data:                []byte("test data"),
+		}},
+		EffectiveNonce: 42,
+	}
+	
+	tx := &Transaction{inner: inner}
+	
+	// Test that Hash works without panic
+	hash := tx.Hash()
+	if hash == (common.Hash{}) {
+		t.Error("Hash should not be zero")
+	}
+	
+	// Test that SourceHash works
+	srcHash := tx.SourceHash()
+	if srcHash != common.HexToHash("0xdeadbeef") {
+		t.Errorf("SourceHash mismatch: got %s, want 0xdeadbeef", srcHash.Hex())
+	}
+	
+	// Test that Mint works
+	mint := tx.Mint()
+	if mint == nil || mint.Cmp(big.NewInt(1000)) != 0 {
+		t.Errorf("Mint mismatch: got %v, want 1000", mint)
+	}
+	
+	// Verify the hash excludes Mint field
+	// Create same tx without mint to compare
+	innerNoMint := &depositTxV2WithNonce{
+		DepositTxV2: DepositTxV2{DepositTx{
+			SourceHash:          common.HexToHash("0xdeadbeef"),
+			From:                addr,
+			To:                  &addr,
+			Mint:                nil, // No mint
+			Value:               big.NewInt(2000),
+			Gas:                 50000,
+			IsSystemTransaction: true,
+			Data:                []byte("test data"),
+		}},
+		EffectiveNonce: 42,
+	}
+	
+	txNoMint := &Transaction{inner: innerNoMint}
+	hashNoMint := txNoMint.Hash()
+	
+	if hash != hashNoMint {
+		t.Error("Hash should be the same regardless of Mint value")
+	}
+}

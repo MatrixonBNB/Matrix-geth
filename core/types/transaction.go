@@ -341,6 +341,10 @@ func (tx *Transaction) SourceHash() common.Hash {
 		return dep.SourceHash
 	case *DepositTxV2:
 		return dep.SourceHash
+	case *depositTxWithNonce:
+		return dep.SourceHash
+	case *depositTxV2WithNonce:
+		return dep.SourceHash
 	}
 	return common.Hash{}
 }
@@ -352,6 +356,10 @@ func (tx *Transaction) Mint() *big.Int {
 	case *DepositTx:
 		return dep.Mint
 	case *DepositTxV2:
+		return dep.Mint
+	case *depositTxWithNonce:
+		return dep.Mint
+	case *depositTxV2WithNonce:
 		return dep.Mint
 	}
 	return nil
@@ -584,7 +592,15 @@ func (tx *Transaction) Hash() common.Hash {
 
 	case DepositTxV2Type:
 		// Copy the transaction and zero out Mint field only
-		d := *(tx.inner.(*DepositTxV2))
+		var d DepositTxV2
+		switch inner := tx.inner.(type) {
+		case *DepositTxV2:
+			d = *inner
+		case *depositTxV2WithNonce:
+			d = inner.DepositTxV2
+		default:
+			panic(fmt.Sprintf("expected DepositTxV2 or depositTxV2WithNonce, got %T", tx.inner))
+		}
 		d.Mint = nil
 		out = prefixedRlpHash(tx.Type(), &d)
 
