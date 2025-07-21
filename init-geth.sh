@@ -63,9 +63,9 @@ RPC_GAS_CAP=${RPC_GAS_CAP:-500000000}
 
 # Build override flags
 OVERRIDE_FLAGS=""
-if [ ! -z "$BLUEBIRD_TIME" ]; then
-  echo "Setting Bluebird fork time to: $BLUEBIRD_TIME"
-  OVERRIDE_FLAGS="$OVERRIDE_FLAGS --override.bluebird=$BLUEBIRD_TIME"
+if [ ! -z "$BLUEBIRD_TIMESTAMP" ]; then
+  echo "Setting Bluebird fork timestamp to: $BLUEBIRD_TIMESTAMP"
+  OVERRIDE_FLAGS="$OVERRIDE_FLAGS --override.bluebird=$BLUEBIRD_TIMESTAMP"
 fi
 
 # Start geth in server mode without interactive console
