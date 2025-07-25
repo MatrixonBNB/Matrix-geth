@@ -592,12 +592,12 @@ func (tx *Transaction) Hash() common.Hash {
 
 	case DepositTxV2Type:
 		// Copy the transaction and zero out Mint field only
-		var d DepositTxV2
+		var d DepositTx
 		switch inner := tx.inner.(type) {
 		case *DepositTxV2:
-			d = *inner
+			d = inner.DepositTx
 		case *depositTxV2WithNonce:
-			d = inner.DepositTxV2
+			d = inner.DepositTxV2.DepositTx
 		default:
 			panic(fmt.Sprintf("expected DepositTxV2 or depositTxV2WithNonce, got %T", tx.inner))
 		}
