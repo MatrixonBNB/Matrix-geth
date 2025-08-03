@@ -315,28 +315,30 @@ func extractL1GasParamsPreEcotone(config *params.ChainConfig, time uint64, data 
 }
 
 // extractL1GasParamsPostBluebird extracts the gas parameters necessary to compute gas from L1 attribute
-// info calldata after the Bluebird upgrade. The calldata is 260 bytes long, with gas computation
-// fields in the first 196 bytes.
+// info calldata after the Bluebird upgrade. The calldata is 292 bytes long (4 byte selector + 288 bytes of data).
 func extractL1GasParamsPostBluebird(data []byte) (gasParams, error) {
 	if len(data) != 292 {
-		return gasParams{}, fmt.Errorf("expected 260 L1 info bytes in Bluebird, got %d", len(data))
+		return gasParams{}, fmt.Errorf("expected 292 L1 info bytes in Bluebird, got %d", len(data))
 	}
-	// data layout for Bluebird (first 196 bytes same as Ecotone):
-	// offset type varname
-	// 0     <selector>
-	// 4     uint32 _basefeeScalar
-	// 8     uint32 _blobBaseFeeScalar
-	// 12    uint64 _sequenceNumber,
-	// 20    uint64 _timestamp,
-	// 28    uint64 _l1BlockNumber
-	// 36    uint256 _basefee,
-	// 68    uint256 _blobBaseFee,
-	// 100   bytes32 _hash,
-	// 132   bytes32 _batcherHash,
-	// 164   bytes32 _newField1,  // New fields in Bluebird
-	// 196   bytes32 _newField2,
-	// 228   bytes32 _newField3,
-	// 260   bytes32 _newField4,
+	// data layout for Bluebird (288 bytes of data after 4-byte selector):
+	// offset type     varname
+	// 0      bytes4   <selector>
+	// 4      uint32   basefeeScalar
+	// 8      uint32   blobBaseFeeScalar
+	// 12     uint64   sequenceNumber
+	// 20     uint64   timestamp
+	// 28     uint64   l1BlockNumber
+	// 36     uint256  basefee
+	// 68     uint256  blobBaseFee
+	// 100    bytes32  hash
+	// 132    bytes32  batcherHash
+	// 164    uint128  fct_mint_period_l1_data_gas (16 bytes)
+	// 180    uint128  fct_mint_rate (16 bytes)
+	// 196    uint128  fct_period_start_block (16 bytes)
+	// 212    uint128  fct_total_minted (16 bytes)
+	// 228    uint128  fct_max_supply (16 bytes)
+	// 244    uint128  fct_period_minted (16 bytes)
+	// 260    uint256  fct_initial_target_per_period (32 bytes)
 	l1BaseFee := new(big.Int).SetBytes(data[36:68])
 	l1BlobBaseFee := new(big.Int).SetBytes(data[68:100])
 	l1BaseFeeScalar := binary.BigEndian.Uint32(data[4:8])
