@@ -318,7 +318,7 @@ func extractL1GasParamsPreEcotone(config *params.ChainConfig, time uint64, data 
 // info calldata after the Bluebird upgrade. The calldata is 260 bytes long, with gas computation
 // fields in the first 196 bytes.
 func extractL1GasParamsPostBluebird(data []byte) (gasParams, error) {
-	if len(data) != 260 {
+	if len(data) != 292 {
 		return gasParams{}, fmt.Errorf("expected 260 L1 info bytes in Bluebird, got %d", len(data))
 	}
 	// data layout for Bluebird (first 196 bytes same as Ecotone):
