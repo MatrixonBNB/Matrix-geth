@@ -260,6 +260,8 @@ func getEcotoneL1Attributes(baseFee, blobBaseFee, baseFeeScalar, blobBaseFeeScal
 	data = append(data, blobBaseFee.FillBytes(uint256Slice)...)
 	data = append(data, ignored.FillBytes(uint256Slice)...)
 	data = append(data, ignored.FillBytes(uint256Slice)...)
+	// Add additional 32 bytes to reach 196 bytes total (164 + 32 = 196)
+	data = append(data, ignored.FillBytes(uint256Slice)...)
 	return data
 }
 
@@ -417,15 +419,15 @@ func TestExtractBluebirdGasParams(t *testing.T) {
 	}
 	require.True(t, config.IsBluebird(zeroTime))
 
-	// Create Bluebird data (260 bytes) with the same gas computation fields as Ecotone
+	// Create Bluebird data (292 bytes) with the same gas computation fields as Ecotone
 	data := getEcotoneL1Attributes(
 		baseFee,
 		blobBaseFee,
 		baseFeeScalar,
 		blobBaseFeeScalar,
 	)
-	// Add the additional 64 bytes for Bluebird
-	extraData := make([]byte, 64)
+	// Add the additional 96 bytes for Bluebird (292 - 196 = 96)
+	extraData := make([]byte, 96)
 	data = append(data, extraData...)
 
 	gasparams, err := extractL1GasParams(config, zeroTime, data)
@@ -440,5 +442,5 @@ func TestExtractBluebirdGasParams(t *testing.T) {
 	// Test with wrong data length
 	_, err = extractL1GasParamsPostBluebird(data[:196]) // Use Ecotone length
 	require.Error(t, err)
-	require.Contains(t, err.Error(), "expected 260 L1 info bytes in Bluebird")
+	require.Contains(t, err.Error(), "expected 292 L1 info bytes in Bluebird")
 }
