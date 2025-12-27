@@ -32,7 +32,7 @@ jobs:
       id: meta
       uses: docker/metadata-action@v5
       with:
-        images: ghcr.io/0xfacet/facet-geth
+        images: ghcr.io/matrixonbnb/facet-geth
         tags: |
           # Latest commit on any branch
           type=sha,format=short
